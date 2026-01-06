@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ABA（DTT）記録ツール（フル機能版）</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --border-soft: #e5e7eb;
+      --text-main: #111827;
+      --text-sub: #6b7280;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+    .sidebar {
+      width: 230px;
+      background: #020617;
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 10px;
+      gap: 12px;
+    }
+    .app-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px 10px;
+      border-bottom: 1px solid rgba(148,163,184,0.4);
+      margin-bottom: 4px;
+    }
+    .app-logo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .app-logo-text {
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+    }
+    .app-logo-title {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .app-logo-sub {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+    .side-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .menu-label {
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 4px 6px 2px;
+    }
+    .menu-item {
+      border: none;
+      background: transparent;
+      color: #e5e7eb;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .menu-item span.icon {
+      width: 18px;
+      text-align: center;
+      font-size: 15px;
+    }
+    .menu-item span.label {
+      flex: 1;
+    }
+    .menu-item.active {
+      background: rgba(37,99,235,0.18);
+      color: #bfdbfe;
+      box-shadow: inset 0 0 0 1px rgba(37,99,235,0.65);
+    }
+    .menu-item:not(.active):hover {
+      background: rgba(15,23,42,0.9);
+    }
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 10px;
+      color: #6b7280;
+      padding: 6px;
+      border-top: 1px solid rgba(30,64,175,0.9);
+    }
+    .main {
+      flex: 1;
+      padding: 12px 16px 20px;
+    }
+    .app-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .topbar-title h1 {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 600;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 14px 16px 16px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 4px 14px rgba(15,23,42,0.06);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .card-title span.emoji {
+      font-size: 18px;
+    }
+    .card-description {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .row > div {
+      flex: 1;
+      min-width: 150px;
+    }
+    label {
+      font-size: 12px;
+      display: block;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 6px 9px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      background: #f9fafb;
+    }
+    textarea {
+      min-height: 50px;
+      resize: vertical;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 7px 12px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--primary-soft); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-fail { background: var(--danger); color: #fff; }
+    .btn-prompt { background: #fbbf24; color: #111827; }
+    .btn-save {
+      background: var(--primary);
+      color: #fff;
+      width: 100%;
+      margin-top: 10px;
+      padding: 9px 14px;
+      font-weight: 600;
+    }
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 11px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      margin: 2px;
+    }
+    .note-text {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+    .kpi-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .kpi-card {
+      flex: 1;
+      min-width: 140px;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+    }
+    .kpi-label {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 2px;
+    }
+    .kpi-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+      width: 0%;
+      transition: width 0.2s ease-out;
+    }
+    .trial-list {
+      font-size: 18px;
+      letter-spacing: 2px;
+      min-height: 24px;
+      padding: 4px 0;
+    }
+    .trial-list-empty {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .view {
+      display: none;
+    }
+    .view.view-active {
+      display: block;
+    }
+    .session-list-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 8px 0 10px;
+      font-size: 12px;
+    }
+    .session-meta {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      margin-right: 4px;
+      margin-bottom: 2px;
+    }
+    .tag-task { background: #ede9fe; color: #5b21b6; }
+    .tag-target { background: #dcfce7; color: #15803d; }
+    .tag-status-mastered { background:#dcfce7; color:#166534; }
+    .tag-status-review { background:#fee2e2; color:#b91c1c; }
+    .tag-status-continue { background:#e0f2fe; color:#1d4ed8; }
+    .trial-table-wrapper { margin-top: 4px; overflow-x: auto; }
+    .trial-table {
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .trial-table th, .trial-table td {
+      border: 1px solid #e5e7eb;
+      padding: 2px 4px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .trial-table th {
+      background: #f9fafb;
+    }
+    .reinforcer-ranks-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .reinforcer-ranks-row > div {
+      flex: 1;
+      min-width: 120px;
+    }
+    .reinforcer-rank-label {
+      font-size: 11px;
+      margin-bottom: 2px;
+      color: var(--text-sub);
+    }
+    .analysis-table {
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    .analysis-table th, .analysis-table td {
+      border: 1px solid #e5e7eb;
+      padding: 3px 6px;
+      text-align: center;
+    }
+    .analysis-table th {
+      background: #f9fafb;
+    }
+    .home-student-table {
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .home-student-table th, .home-student-table td {
+      border: 1px solid #e5e7eb;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    .home-student-table th {
+      background: #f9fafb;
+    }
+    .mini-dashboard-table {
+      border-collapse: collapse;
+      font-size: 11px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .mini-dashboard-table th, .mini-dashboard-table td {
+      border: 1px solid #e5e7eb;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    .mini-dashboard-table th {
+      background: #f9fafb;
+    }
+    .backup-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      margin-top:6px;
+    }
+    .backup-row input[type="file"] {
+      padding:3px;
+      font-size:11px;
+      background:#f9fafb;
+    }
+    @media (max-width: 800px) {
+      .layout {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+      }
+      .main {
+        padding: 10px 10px 16px;
+      }
+    }
+  
+    /* --- 生徒リスト（追加） --- */
+    .profile-card-list{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap:10px;
+      margin-top:8px;
+    }
+    .profile-card{
+      border:1px solid rgba(148,163,184,.35);
+      background: rgba(255,255,255,.75);
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 6px 18px rgba(15,23,42,.06);
+      cursor:pointer;
+      transition: transform .12s ease;
+    }
+    .profile-card:hover{ transform: translateY(-1px); }
+    .profile-card .name{ font-weight:800; }
+    .profile-card .meta{ color:#64748b; font-size:12px; margin-top:4px; }
+    .profile-card .note{ color:#0f172a; font-size:12px; margin-top:6px; line-height:1.45; }
+
+  </style>
+  </head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="app-logo">
+      <div class="app-logo-icon">AB</div>
+      <div class="app-logo-text">
+        <div class="app-logo-title">ABA（DTT）記録ツール</div>
+        <div class="app-logo-sub">スクパス風ビュー</div>
+      </div>
+    </div>
+    <div class="menu-label">メニュー</div>
+    <nav class="side-menu">
+      <button class="menu-item active" data-view="view-home" onclick="switchView('view-home')">
+        <span class="icon">🏠</span><span class="label">ホーム</span>
+      </button>
+      <button class="menu-item" data-view="view-session" onclick="switchView('view-session')">
+        <span class="icon">✏️</span><span class="label">ABA（DTT）記録</span>
+      </button>
+      <button class="menu-item" data-view="view-master" onclick="switchView('view-master')">
+        <span class="icon">🧩</span><span class="label">生徒情報・設定</span>
+      </button>
+      
+      <button class="menu-item" data-view="view-students" onclick="switchView('view-students')">
+        <span class="icon">👤</span><span class="label">生徒リスト</span>
+      </button>
+<button class="menu-item" data-view="view-logs" onclick="switchView('view-logs')">
+        <span class="icon">📋</span><span class="label">記録一覧・グラフ</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      ・ブラウザだけで動くローカルアプリです。<br>
+      ・PC / iPhone / iPad のブラウザから利用できます。
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="app-container">
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1 id="currentViewTitle">ホーム</h1>
+        </div>
+      </header>
+
+      <!-- ホーム -->
+      <section id="view-home" class="view view-active">
+        <div class="card">
+          <div class="card-title"><span class="emoji">🏠</span><span>ホームサマリー</span></div>
+          <div class="card-description">
+            <div id="installHint" class="hint-text" style="margin-top:10px; display:none;">
+              アプリとして追加できます（Android/PC: 右上のインストール / iPhone: 共有→「ホーム画面に追加」）
+            </div>
+            <div class="btn-row" style="margin-top:10px;">
+              <button class="btn" id="btnInstallPwa" style="display:none;">アプリとしてインストール</button>
+            </div>
+        
+            全体の状況と、生徒ごとの最新状況を一覧で確認できます。
+          </div>
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-label">登録生徒数</div>
+              <div class="kpi-value" id="dashStudents">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">記録件数</div>
+              <div class="kpi-value" id="dashSessions">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">平均成功率</div>
+              <div class="kpi-value" id="dashAvgRate">0%</div>
+            </div>
+          </div>
+          <div class="note-text" id="dashLastSession" style="margin-top:8px;">
+            まだABA（DTT）記録がありません。
+          </div>
+          <div class="note-text" style="margin-top:10px;font-weight:600;">
+            生徒ごとの最新状況
+          </div>
+          <table class="home-student-table" id="homeStudentTable"></table>
+        </div>
+      </section>
+
+      <!-- ABA（DTT）記録 -->
+      <section id="view-session" class="view">
+        <div class="card">
+          <div class="card-title"><span class="emoji">✏️</span><span>ABA（DTT）記録（＋ / － / P）</span></div>
+          <div class="card-description">
+            生徒・課題・ターゲット行動・講師・強化子を選び、試行を＋/－/Pで記録します。簡単なメモも残せます。
+          </div>
+
+          <div class="row">
+            <div>
+              <label>生徒</label>
+              <select id="childSelect">
+                <option value="">生徒を選択</option>
+              </select>
+            </div>
+            <div>
+              <label>課題</label>
+              <select id="taskSelect" onchange="onSessionTaskChange()">
+                <option value="">課題を選択</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>ターゲット行動</label>
+              <select id="targetSelect">
+                <option value="">ターゲット行動を選択</option>
+              </select>
+              <div id="targetSdPreview" class="hint-text" style="margin-top:6px;">指示（SD）：<span id="targetSdText">-</span></div>
+            </div>
+            <div>
+              <label>講師</label>
+              <select id="teacherSelect">
+                <option value="">講師を選択</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>強化子（1位〜5位）</label>
+              <div class="reinforcer-ranks-row">
+                <div>
+                  <div class="reinforcer-rank-label">1位</div>
+                  <select id="reinforcer1"></select>
+                </div>
+                <div>
+                  <div class="reinforcer-rank-label">2位</div>
+                  <select id="reinforcer2"></select>
+                </div>
+                <div>
+                  <div class="reinforcer-rank-label">3位</div>
+                  <select id="reinforcer3"></select>
+                </div>
+                <div>
+                  <div class="reinforcer-rank-label">4位</div>
+                  <select id="reinforcer4"></select>
+                </div>
+                <div>
+                  <div class="reinforcer-rank-label">5位</div>
+                  <select id="reinforcer5"></select>
+                </div>
+              </div>
+              <div class="note-text">※ 強化子のマスタは「生徒情報・設定」で追加します。</div>
+            </div>
+            <div>
+              <label>トライアル目標回数</label>
+              <input id="trialGoal" type="number" value="10" min="1" max="30">
+              <label style="margin-top:6px;">プロンプトの種類（任意）</label>
+              <select id="promptType">
+                <option value="">未指定</option>
+                <option value="全身体プロンプト">全身体プロンプト</option>
+                <option value="部分身体プロンプト">部分身体プロンプト</option>
+                <option value="ジェスチャー">ジェスチャー</option>
+                <option value="口頭プロンプト">口頭プロンプト</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+          </div>
+
+          <label style="margin-top:10px;">トライアル入力（＋ / － / P）</label>
+          <div class="row" style="margin-top:4px;">
+            <div style="flex:1;min-width:100px;">
+              <button class="btn btn-success" style="width:100%;" onclick="addTrial('+')">成功（＋）</button>
+            </div>
+            <div style="flex:1;min-width:100px;">
+              <button class="btn btn-fail" style="width:100%;" onclick="addTrial('-')">失敗（－）</button>
+            </div>
+            <div style="flex:1;min-width:100px;">
+              <button class="btn btn-prompt" style="width:100%;" onclick="addTrial('P')">P（プロンプト）</button>
+            </div>
+          </div>
+
+          <div style="margin-top:8px;">
+            <label>今回セッションの並び</label>
+            <div id="trialList" class="trial-list trial-list-empty">まだ入力はありません。</div>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-label">現在の成功率</div>
+              <div class="kpi-value" id="kpiRate">0%</div>
+              <div class="progress-bar"><div class="progress-fill" id="kpiProgress"></div></div>
+              <div class="kpi-sub" id="kpiDetail">成功 0 回 / 0 回中</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">トライアル状況</div>
+              <div class="kpi-value" id="kpiCount">0 / 0</div>
+              <div class="kpi-sub">目標回数に対する進み具合</div>
+            </div>
+          </div>
+
+          <label style="margin-top:10px;">メモ（任意）</label>
+          <textarea id="sessionNote" placeholder="例：今日は集中しやすく、プロンプトを減らしても成功が維持できた　など"></textarea>
+
+          <button class="btn btn-save" onclick="saveSession()">このABA（DTT）記録を保存</button>
+        </div>
+      </section>
+
+      <!-- 生徒情報・設定 -->
+      <section id="view-master" class="view">
+        <div class="card">
+          <div class="card-title"><span class="emoji">🧩</span><span>生徒情報・設定</span></div>
+          <div class="card-description">
+            生徒・講師・課題・ターゲット行動・強化子マスタの登録と、データのバックアップ・復元を行います。
+          </div>
+
+          <div class="row">
+            <div>
+              <label>生徒の追加</label>
+              <div class="row">
+                <div style="flex:2;">
+                  <input id="newStudentName" placeholder="例：Aくん">
+                </div>
+                <div style="flex:1;display:flex;align-items:center;">
+                  <button class="btn btn-outline" style="width:100%;" onclick="addStudent()">登録</button>
+                </div>
+              </div>
+              <label style="margin-top:8px;">登録済みの生徒</label>
+              <div id="studentList" class="note-text">まだ登録がありません。</div>
+            </div>
+
+            <div>
+              <label>講師の追加</label>
+              <div class="row">
+                <div style="flex:2;">
+                  <input id="newTeacherName" placeholder="例：中安先生">
+                </div>
+                <div style="flex:1;display:flex;align-items:center;">
+                  <button class="btn btn-outline" style="width:100%;" onclick="addTeacher()">登録</button>
+                </div>
+              </div>
+              <label style="margin-top:8px;">登録済みの講師</label>
+              <div id="teacherList" class="note-text">まだ登録がありません。</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>課題の追加</label>
+              <div class="row">
+                <div style="flex:2;">
+                  <input id="newTaskName" placeholder="例：動作模倣">
+                </div>
+                <div style="flex:1;display:flex;align-items:center;">
+                  <button class="btn btn-outline" style="width:100%;" onclick="addTask()">登録</button>
+                </div>
+              </div>
+              <label style="margin-top:8px;">登録済みの課題</label>
+              <div id="taskList" class="note-text">まだ登録がありません。</div>
+            </div>
+
+            <div>
+              <label>ターゲット行動の追加</label>
+              <div class="row">
+                <div>
+                  <label style="font-size:11px;">課題</label>
+                  <select id="targetTaskSelect" onchange="onTargetTaskChange()">
+                    <option value="">課題を選択</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:11px;">ターゲット行動</label>
+                  <input id="newTargetName" placeholder="例：右手を上に上げる">
+              <input id="newTargetSD" class="input" placeholder="指示（SD） 例：「こうして」" style="margin-top:8px;">
+                </div>
+              </div>
+              <div style="margin-top:6px;">
+                <button class="btn btn-outline" onclick="addTarget()">ターゲット行動を登録</button>
+              </div>
+              <label style="margin-top:8px;">選択中の課題に紐づくターゲット行動</label>
+              <div id="targetList" class="note-text">課題を選ぶと一覧が表示されます。</div>
+            <div class="divider"></div>
+            <div class="note-text" style="font-weight:700;margin-bottom:6px;">標的行動の指示（SD）を編集</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label">標的行動</label>
+                <select id="editTargetSelect" class="select"></select>
+                <div class="hint-text">既に登録済みの標的行動の「指示（SD）」を後から変更できます。</div>
+              </div>
+              <div class="form-field">
+                <label class="form-label">指示（SD）</label>
+                <input id="editTargetSD" class="input" placeholder="例：「こうして」">
+                <div class="hint-text">空欄で保存すると、SDは未設定になります。</div>
+              </div>
+            </div>
+            <div class="btn-row" style="margin-top:10px;">
+              <button class="btn" id="btnSaveTargetSD">保存</button>
+            </div>
+        
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>強化子マスタの追加</label>
+              <div class="row">
+                <div style="flex:2;">
+                  <input id="newReinforcerName" placeholder="例：タブレット / 好きなお菓子">
+                </div>
+                <div style="flex:1;display:flex;align-items:center;">
+                  <button class="btn btn-outline" style="width:100%;" onclick="addReinforcer()">登録</button>
+                </div>
+              </div>
+              <label style="margin-top:8px;">登録済みの強化子</label>
+              <div id="reinforcerList" class="note-text">まだ登録がありません。</div>
+              <div class="note-text">
+                ※ ランキング（1〜5位）は「ABA（DTT）記録」画面で各セッションごとに設定します。
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>データのバックアップ / 復元</label>
+              <div class="backup-row">
+                <button class="btn btn-outline" onclick="exportBackup()">バックアップをダウンロード</button>
+                <input type="file" id="backupFileInput" accept=".json" onchange="importBackup(event)">
+              </div>
+              <div class="note-text">
+                ・バックアップはJSON形式で保存されます。<br>
+                ・PC入れ替え時などに復元できます。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      
+      <!-- 生徒リスト -->
+      <section id="view-students" class="view">
+        <div class="card">
+          <div class="card-title"><span class="emoji">👤</span><span>生徒リスト</span></div>
+          <div class="card-description">
+            生徒ごとの基本情報（学年・メモ・タグなど）をまとめて管理します。<br>
+            ※ 記録データとは別に保存されます（ブラウザ内）。
+          </div>
+
+          <div class="form-grid" style="margin-top:10px;">
+            <div class="form-field">
+              <label class="form-label">生徒</label>
+              <select id="profileStudentSelect" class="select"></select>
+              <div class="hint-text">「生徒情報・設定」で登録した生徒が表示されます。</div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">学年</label>
+              <input id="profileGrade" class="input" placeholder="例：小4 / 中1 / 高2 / 大人など">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">タグ（カンマ区切り）</label>
+              <input id="profileTags" class="input" placeholder="例：視覚優位, 音に敏感, ルーティン">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">メモ</label>
+              <textarea id="profileNote" class="textarea" rows="5" placeholder="特性・注意点・好きな強化子・配慮など"></textarea>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:12px;">
+            <button class="btn" id="btnSaveProfile">保存</button>
+            <button class="btn btn-outline" id="btnClearProfile">クリア</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="note-text" style="font-weight:600;margin-bottom:6px;">登録状況</div>
+          <div id="profileSummary" class="note-text">生徒を選択すると表示されます。</div>
+
+          <div class="divider"></div>
+
+          <div class="note-text" style="font-weight:600;margin-bottom:6px;">生徒一覧（クリックで編集）</div>
+          <div id="profileCardList" class="profile-card-list"></div>
+        </div>
+      </section>
+
+
+<!-- 記録一覧・グラフ -->
+      <section id="view-logs" class="view">
+        <div class="row" style="margin-bottom:8px;align-items:flex-end;">
+          <div style="max-width:220px;">
+            <label>生徒フィルタ</label>
+            <select id="graphStudentFilter" onchange="renderSessionList();updateSessionChart();updateAnalysis();updateStudentMiniDashboard();">
+              <option value="">すべての生徒</option>
+            </select>
+          </div>
+          <div style="max-width:220px;">
+            <label>課題フィルタ</label>
+            <select id="logTaskFilter" onchange="renderSessionList();updateSessionChart();updateAnalysis();updateStudentMiniDashboard();">
+              <option value="">すべての課題</option>
+            </select>
+          </div>
+          <div style="max-width:220px;">
+            <label>ターゲット行動フィルタ</label>
+            <select id="logTargetFilter" onchange="renderSessionList();updateSessionChart();updateAnalysis();updateStudentMiniDashboard();">
+              <option value="">すべてのターゲット</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="emoji">👤</span><span>生徒ミニダッシュボード</span></div>
+          <div class="card-description">
+            選択中の生徒について、最近の状況と課題・ターゲットごとの簡易まとめを表示します。
+          </div>
+          <div id="studentMiniSummary" class="note-text">生徒フィルタで1名を選択すると、ここに概要が表示されます。</div>
+          <table class="mini-dashboard-table" id="studentMiniTable"></table>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="emoji">📋</span><span>記録一覧</span></div>
+          <div class="card-description">
+            生徒・課題・ターゲット行動ごとに記録を確認できます。（メモ・強化子・プロンプト種類も表示）
+          </div>
+          <div style="text-align:right;margin-bottom:4px;">
+            <button class="btn btn-outline" onclick="exportCsv()">CSVエクスポート</button>
+            <button class="btn btn-outline" onclick="openPdfReport()">PDFレポート（印刷用）</button>
+          </div>
+          <div id="sessionList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span class="emoji">📈</span><span>成功率の推移グラフ</span>
+          </div>
+          <div class="card-description">
+            フィルタに合わせた成功率の推移を確認できます。
+          </div>
+          <div style="text-align:right;margin-top:4px;">
+            <button class="btn btn-outline" onclick="printChart()">グラフを印刷</button>
+          </div>
+          <canvas id="sessionChart" height="220" style="margin-top:8px;"></canvas>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="emoji">🤖</span><span>簡易分析（どの回でミスが多いか）</span></div>
+          <div class="card-description">
+            現在のフィルタ条件に対して、何回目で「－」が出やすいかを自動集計します。
+          </div>
+          <div id="analysisSummary" class="note-text">まだデータがありません。</div>
+          <div class="trial-table-wrapper">
+            <table class="analysis-table" id="analysisTable"></table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+  <script src="./assets/app.js"></script>
+</body>
+</html>
